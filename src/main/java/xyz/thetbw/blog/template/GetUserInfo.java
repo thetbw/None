@@ -45,6 +45,10 @@ public class GetUserInfo  implements TemplateMethodModelEx {
         switch (s){
             case ADMIN:
                 User user = userService.getAdminUser();
+                if (user==null){
+                    user=new User();
+                    user.setUser_name("NUll");
+                }
                 return user;
             case LOGIN:
                 User u = userService.getUser();

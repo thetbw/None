@@ -71,9 +71,5 @@
                 </ol>
             </div>
         </#if>
-
-        <script src="/${_theme("themeFilePath")}/js/jquery-3.4.1.min.js"></script>
-        <script src="/${_theme("themeFilePath")}/js/jquery.form.min.js"></script>
-        <script src="/${_theme("themeFilePath")}/js/comment_script.js" data-no-instant></script>
     </div>
 </div>

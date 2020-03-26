@@ -114,6 +114,9 @@ public class CommentApi {
         if (article_id!=null){
             article = articleService.getArticle(article_id);
             if (article==null) throw new ArticleNotFountException();
+        }else {
+            article = articleService.getArticle(comment.getComment_article_id());
+            if (article==null) throw new ArticleNotFountException();
         }
         if (comment==null&&article==null)
             throw new RequestException("请求错误，必须提供正确的文章地址或父评论");

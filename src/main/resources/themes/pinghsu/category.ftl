@@ -1,12 +1,12 @@
 <#include "header.ftl">
 <style>
     @media (max-width: 580px){
-        .categories{
+        .category{
             margin-top: 1rem;
         }
     }
 </style>
-<div class="main-content archive-page clearfix categories" >
+<div class="main-content archive-page clearfix" >
     <div class="categorys-item">
         <#if category??>
             <div class="categorys-title">
@@ -20,11 +20,10 @@
                         <#items as child>
                             <div class="post-lists-body">
                                 <div class="post-list-item">
-                                    <div class="post-list-item-container">
+                                    <div class="post-list-item-container category">
                                         <div class="item-label">
                                             <div class="item-title"><a
                                                         href="/category/${child.category_id}">${child.category_name}</a><br>
-
                                             </div>
                                             <div class="item-meta clearfix">
                                                 <div class="item-meta-date"> ${child.category_article_num}篇文章</div>
