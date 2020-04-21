@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 
-@RestController
+@RestController()
 @RequestMapping("/api/article")
 public class ArticleApi {
 

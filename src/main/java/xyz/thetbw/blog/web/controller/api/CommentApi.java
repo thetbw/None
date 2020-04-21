@@ -16,7 +16,6 @@ import xyz.thetbw.blog.util.PageHelper;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Enumeration;
 import java.util.List;
 
 @RestController
@@ -95,11 +94,11 @@ public class CommentApi {
         User user = userService.getUser();
         if ((parent_id!=null&&user==null) ||
                 (parent_id!=null&&user!=null&&user.getUser_role()==User.USER_ROLE_GUEST)){
-            throw new CommentAcessException("禁止游客回复其他用户评论");
+            throw new CommentAccessException("禁止游客回复其他用户评论");
         }
         if (user==null){
             if (AppContext.getInstance().setting.getCommentMustLogin())
-                throw new CommentAcessException("你没有足够的权限评论");
+                throw new CommentAccessException("你没有足够的权限评论");
             else  {
                 user = userService.createGuestUser(user_nickname,user_email);
             }

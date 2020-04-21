@@ -2,6 +2,7 @@ package xyz.thetbw.blog.aspect;
 
 
 import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
@@ -30,24 +31,34 @@ public class CommentLimit {
     @Autowired
     HttpServletRequest request;
 
-    @Before("@annotation(xyz.thetbw.blog.annotation.RequestLimit)")
-    public void limit(JoinPoint joinPoint) throws CommentException {
+    @Around("@annotation(xyz.thetbw.blog.annotation.RequestLimit)")
+    public void limit(ProceedingJoinPoint joinPoint) throws CommentException {
         LOG.debug("评论计数，当前池容量："+limitPool.size());
         if (request==null) throw new RuntimeException("request 为空");
         MethodSignature methodSignature = (MethodSignature) joinPoint.getSignature();
         RequestLimit limit = methodSignature.getMethod().getAnnotation(RequestLimit.class);
         if (limit==null) throw new RuntimeException("aspect 错误，RequestLimit 为空");
         String ip = request.getRemoteAddr();
+        LOG.debug("当前评论ip:"+ip);
+        LeakyBucket bucket=null;
         synchronized (limitPool){
-            LeakyBucket bucket = limitPool.get(ip);
+            bucket = limitPool.get(ip);
             if (bucket==null){
                 double speed = (double) limit.count()/(double) limit.time();
                 bucket=new LeakyBucket(limit.count(),speed);
                 limitPool.put(ip,bucket);
             }
             LOG.debug("当前计数器信息：value:"+bucket.getValue()+" size:"+bucket.getSize());
-            if (!bucket.add()){
-                throw new CommentException("评论过于频繁");
+        }
+        if (!bucket.preAdd()){
+            throw new CommentException("评论过于频繁");
+        }else {
+            try {
+                joinPoint.proceed(joinPoint.getArgs());
+                bucket.add();
+            } catch (Throwable throwable) {
+                LOG.error(throwable.getMessage());
+                throwable.printStackTrace();
             }
         }
     }
@@ -114,6 +125,16 @@ public class CommentLimit {
                     return false;
                 else{
                     value++;
+                    return true;
+                }
+            }
+        }
+
+        public boolean preAdd(){
+            synchronized (this){
+                if ((value+1)>size)
+                    return false;
+                else{
                     return true;
                 }
             }

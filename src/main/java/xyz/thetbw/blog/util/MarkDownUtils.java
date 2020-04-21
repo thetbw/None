@@ -87,7 +87,8 @@ public class MarkDownUtils {
     private class LinkProvider implements AttributeProvider{
         @Override
         public void setAttributes(Node node, String tagName, Map<String, String> attributes) {
-            attributes.put("target","_blank");
+            if(tagName.endsWith("a"))
+                attributes.put("target","_blank");
         }
     }
 }
