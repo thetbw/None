@@ -66,8 +66,9 @@ public class Article {
     @Override
     public String toString() {
         StringBuilder stringBuilder = new StringBuilder();
-        stringBuilder.append("article_id:").append(article_id).append("\t")
-                .append("article_title:").append(article_title).append("\t");
+        stringBuilder.append("article_id\t:").append(article_id).append("\n")
+                .append("article_title\t:").append(article_title).append("\n")
+                .append("article_update_time\t:").append(article_update_time).append("\n");
         return stringBuilder.toString();
     }
 

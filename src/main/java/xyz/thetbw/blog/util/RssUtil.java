@@ -1,21 +1,25 @@
 package xyz.thetbw.blog.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.annotation.*;
 import java.io.IOException;
 import java.io.Writer;
-import java.util.ArrayList;
-import java.util.List;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * rss和java的映射转换以及一些其他工具
  */
 public class RssUtil {
     public static final String VERSION="2.0";
+    private static Logger LOG =LoggerFactory.getLogger(RssUtil.class);
 
-    private List<Item> items=new ArrayList<>();
     private Rss rss = new Rss();
     private Channel channel = new Channel();
     private Marshaller marshaller;
@@ -24,6 +28,7 @@ public class RssUtil {
     private RssUtil(){
         rss.setChannel(channel);
         rss.setVersion(VERSION);
+        channel.setGenerator("None blog system;https://github.com/thetbw/None");
         myWriter = new MyWriter();
     }
 
@@ -34,10 +39,22 @@ public class RssUtil {
             marshaller.marshal(rss,myWriter);
             value = myWriter.getString();
         } catch (JAXBException e) {
-            e.printStackTrace();
+            LOG.error("rss转换错误:"+e.getMessage());
             return null;
         }
         return value;
+    }
+
+    /**
+     * 获取适用于rss标准的日期格式
+     * @return
+     */
+    public static String getRfc822Time(long time){
+        Date date = new Date(time);
+        DateFormat dateFormat = new SimpleDateFormat("EEE, d MMM yyyy HH:mm:ss z", Locale.US);
+        SimpleTimeZone aZone = new SimpleTimeZone(8,"GMT");
+        dateFormat.setTimeZone(aZone);
+        return dateFormat.format(date);
     }
 
     public static RssUtil newInstance(){
@@ -48,20 +65,10 @@ public class RssUtil {
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT,true);
             rssUtil.setMarshaller(marshaller);
         } catch (JAXBException e) {
-            e.printStackTrace();
+            LOG.error("JAXBContext初始化失败"+e.getMessage());
             return null;
         }
-
         return rssUtil;
-    }
-
-
-    public List<Item> getItems() {
-        return items;
-    }
-
-    public void setItems(List<Item> items) {
-        this.items = items;
     }
 
     public Rss getRss() {
@@ -184,7 +191,7 @@ public class RssUtil {
         private String webMaster;
 
         @XmlElement(name = "ttl")
-        private int ttl;
+        private Integer ttl;
 
         @XmlElement(name = "item")
         private List<Item> item;
@@ -285,11 +292,11 @@ public class RssUtil {
             this.webMaster = webMaster;
         }
 
-        public int getTtl() {
+        public Integer getTtl() {
             return ttl;
         }
 
-        public void setTtl(int ttl) {
+        public void setTtl(Integer ttl) {
             this.ttl = ttl;
         }
 
@@ -424,10 +431,35 @@ public class RssUtil {
     public static class Guid{
 
         @XmlAttribute(name = "isPermaLink")
-        private boolean isPermaLink;
+        private Boolean isPermaLink;
 
         @XmlValue
         private String value;
+
+        public Guid(){
+
+        }
+
+        public Guid(Boolean isPermaLink, String value) {
+            this.isPermaLink = isPermaLink;
+            this.value = value;
+        }
+
+        public Boolean getPermaLink() {
+            return isPermaLink;
+        }
+
+        public void setPermaLink(Boolean permaLink) {
+            isPermaLink = permaLink;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
 
     @XmlType(name = "category")
@@ -440,6 +472,30 @@ public class RssUtil {
         @XmlValue()
         private String value;
 
+        public Category(){
+
+        }
+
+        public Category(String domain, String value) {
+            this.domain = domain;
+            this.value = value;
+        }
+
+        public String getDomain() {
+            return domain;
+        }
+
+        public void setDomain(String domain) {
+            this.domain = domain;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public void setValue(String value) {
+            this.value = value;
+        }
     }
 
     @XmlType(name = "image")
@@ -456,10 +512,10 @@ public class RssUtil {
         private String link;
 
         @XmlElement(name = "width")
-        private int width;
+        private Integer width;
 
         @XmlElement(name = "height")
-        private int height;
+        private Integer height;
 
 
         public String getUrl() {
@@ -486,19 +542,19 @@ public class RssUtil {
             this.link = link;
         }
 
-        public int getWidth() {
+        public Integer getWidth() {
             return width;
         }
 
-        public void setWidth(int width) {
+        public void setWidth(Integer width) {
             this.width = width;
         }
 
-        public int getHeight() {
+        public Integer getHeight() {
             return height;
         }
 
-        public void setHeight(int height) {
+        public void setHeight(Integer height) {
             this.height = height;
         }
     }

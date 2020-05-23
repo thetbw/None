@@ -28,7 +28,7 @@
 						<div class="item-title"><a href="/article/${article.article_id}">${article.article_title}</a></div>
 						<div class="item-meta clearfix">
 
-							<div class="item-meta-ico bg-ico-book" style="background: url('/${_theme("themeFilePath")}/images/bg-ico.png');no-repeat;background-size: 40px auto;"></div>
+							<div class="item-meta-ico bg-ico-book" style="background: url('/${_theme("themeFilePath")}/images/bg-ico.png') no-repeat;background-size: 40px auto;"></div>
 
 							<div class="item-meta-cat">
 								<#if article.article_category??>
