@@ -159,7 +159,7 @@ public class InitApp implements ApplicationContextInitializer {
      * @param force 是否要强制复制
      * @throws IOException
      */
-    private static void copyDir(File dir, String path, boolean force) throws IOException {
+    public static void copyDir(File dir, String path, boolean force) throws IOException {
         File file = new File(path);
         file.mkdirs();
         File[] children =dir.listFiles();
@@ -180,7 +180,7 @@ public class InitApp implements ApplicationContextInitializer {
      * @param path
      * @throws IOException
      */
-    private static void copyFile(File file, String path) throws IOException {
+    public static void copyFile(File file, String path) throws IOException {
         LOG.debug("正在复制文件："+file);
         FileOutputStream outputStream = new FileOutputStream(path);
         InputStream inputStream = new FileInputStream(file);

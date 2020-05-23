@@ -46,6 +46,68 @@
 	});
 	InstantClick.init('mousedown');
 </script>
+<script src="//cdn.bootcss.com/headroom/0.9.1/headroom.min.js" data-no-instant></script>
+<script src="//cdn.bootcss.com/highlight.js/9.10.0/highlight.min.js" data-no-instant></script>
+<script>
+	var postDirectory = new Headroom(document.getElementById("directory-content"), {
+		tolerance: 0, offset : 90, classes: {
+			initial: "initial",
+			pinned: "pinned",
+			unpinned: "unpinned"
+		}
+	});
+	postDirectory.init();
+	var postSharer = new Headroom(document.getElementById("post-bottom-bar"), {
+		tolerance: 0,
+		offset : 70,
+		classes: {
+			initial: "animated",
+			pinned: "pinned",
+			unpinned: "unpinned"
+		}
+	});
+	postSharer.init();
+	var header = new Headroom(document.getElementById("header"), {
+		tolerance: 0,
+		offset : 70,
+		classes: {
+			initial: "animated",
+			pinned: "slideDown",
+			unpinned: "slideUp"
+		}
+	});
+	header.init();
+	hljs.initHighlightingOnLoad();
+	if ('addEventListener' in document) {
+		document.addEventListener('DOMContentLoaded', function() {
+			FastClick.attach(document.body);
+		}, false);
+	}
+</script>
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+    showProcessingMessages: false,
+    messageStyle: "none",
+    extensions: ["tex2jax.js"],
+    jax: ["input/TeX", "output/HTML-CSS"],
+    tex2jax: {
+        inlineMath: [ ['$','$'], ["\\(","\\)"] ],
+        displayMath: [ ['$$','$$'], ["\\[","\\]"] ],
+        skipTags: ['script', 'noscript', 'style', 'textarea', 'pre','code','a'],
+        ignoreClass:"comment-content"
+    },
+    "HTML-CSS": {
+        availableFonts: ["STIX","TeX"],
+        showMathMenu: false
+    }
+});
+MathJax.Hub.Queue(["Typeset",MathJax.Hub]);
+</script>
+<script src="//cdn.bootcss.com/mathjax/2.7.0/MathJax.js?config=TeX-AMS-MML_HTMLorMML" data-no-instant></script>
+
+<script src="/${_theme("themeFilePath")}/js/jquery-3.4.1.min.js" data-no-instant></script>
+<script src="/${_theme("themeFilePath")}/js/jquery.form.min.js" data-no-instant></script>
+<script src="/${_theme("themeFilePath")}/js/comment_script.js" data-no-instant></script>
 ${_property("siteFooter")!}
 </body>
 </html>

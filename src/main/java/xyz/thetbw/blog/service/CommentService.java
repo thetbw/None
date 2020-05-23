@@ -61,8 +61,7 @@ public class CommentService {
         if (article!=null)
             comment.setComment_article_id(article.getArticle_id());
         else {
-            LOG.warn("没有为评论提供文章地址");
-            return;
+            throw new CommentException("没有为评论提供文章地址");
         }
         if (parent!=null) {
             comment.setComment_parent_id(parent.getComment_id());

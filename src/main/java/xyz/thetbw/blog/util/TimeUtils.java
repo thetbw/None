@@ -23,10 +23,21 @@ public class TimeUtils {
 
 
 
-    public String format(String format,Long time){
-        DateFormat dateFormat = new SimpleDateFormat(format);
+    public String format(String format,long time){
+        DateFormat dateFormat ;
+        if (format==null){
+            dateFormat  = new SimpleDateFormat();
+        }else{
+            dateFormat = new SimpleDateFormat(format);
+        }
         Date date = new Date(time);
         return dateFormat.format(date);
+    }
+
+    public String getNowYear(){
+        Date date = new Date();
+        DateFormat format = new SimpleDateFormat("yyyy");
+        return format.format(date);
     }
 
     /**
