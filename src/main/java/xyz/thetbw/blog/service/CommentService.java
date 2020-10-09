@@ -204,6 +204,20 @@ public class CommentService {
         return comments;
     }
 
+    /**
+     * 获取所有根评论和子评论
+     * @param page
+     * @param max_length
+     * @param article
+     * @return
+     */
+    public List<Comment> commentsWithChild(int page,int max_length,Article article){
+        int start = (page-1)*max_length;
+        List<Comment> comments =
+                commentDao.getRootCommentsByArticleIDWithChildren(start,max_length,article.getArticle_id(),0,max_length);
+        return comments;
+    }
+
 
     /**
      * 批量设置评论的子评论数量,不会迭代

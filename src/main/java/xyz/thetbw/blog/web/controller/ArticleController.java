@@ -59,7 +59,7 @@ public class ArticleController extends BaseController {
         }
         articleService.addArticleTags(article);
         int length  = ConstValue.MAX_COMMENTS_LENGTH;
-        List<Comment> comments = commentService.comments(page,length,article);
+        List<Comment> comments = commentService.commentsWithChild(page,length,article);
         commentService.addCommentUserInfo(comments);
         commentService.addChildCount(comments);
         PageHelper<Comment> helper = new PageHelper<>(comments,page,length,commentService.count(article));

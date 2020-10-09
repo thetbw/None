@@ -3,6 +3,7 @@ package xyz.thetbw.blog.data.dao;
 import org.apache.ibatis.annotations.*;
 import org.springframework.stereotype.Component;
 import xyz.thetbw.blog.data.entity.Comment;
+import xyz.thetbw.blog.data.entity.User;
 
 import java.util.List;
 
@@ -57,6 +58,25 @@ public interface CommentDao {
             " order by comment_create_time desc limit #{index},#{length}")
     List<Comment> getCommentByRootPaging(int index, int length, int root_comment_id);
 
+
+    /**
+     * 查询某个父评论下子评论 和评论用户
+     * @param index
+     * @param length
+     * @param root_comment_id
+     * @return
+     */
+    @Select("select * from blog_comment where comment_root_id=#{root_comment_id} and comment_status=1" +
+            " order by comment_create_time desc limit #{index},#{length}")
+    @Results({
+            @Result(property = "comment_id",column = "comment_id"),
+            @Result(property = "comment_user",javaType = User.class,column = "comment_user_id",
+            many = @Many(select = "xyz.thetbw.blog.data.dao.UserDao.get")),
+            @Result(property = "comment_parent",javaType = Comment.class,column = "comment_id",
+            many = @Many(select= "xyz.thetbw.blog.data.dao.CommentDao.getWithUser"))
+    })
+    List<Comment> getCommentByRootPagingWithUserAndParent(int index, int length, int root_comment_id);
+
     @Select("select * from blog_comment where comment_root_id=#{root_comment_id} and comment_status=1" +
             " order by comment_create_time desc")
     List<Comment> getCommentByRoot(int root_comment_id);
@@ -80,6 +100,15 @@ public interface CommentDao {
     Comment get(int id);
 
 
+    @Select("select * from blog_comment where comment_id=#{id}")
+    @Results({
+            @Result(property = "comment_id", column = "comment_id"),
+            @Result(property = "comment_user", javaType = User.class, column = "comment_user_id",
+                    many = @Many(select = "xyz.thetbw.blog.data.dao.UserDao.get"))
+    })
+    Comment getWithUser(int id);
+
+
 
     /**
      * 查询某个文章下的所有评论
@@ -99,13 +128,35 @@ public interface CommentDao {
             " order by comment_create_time desc limit #{index},#{length}")
     List<Comment> getRootCommentsByArticleID(int index, int length, int comment_article_id);
 
+
+
     /**
-     * 查询父评论，并填充子评论  暂保留
-     * @param comment_acticle_id
+     * 获取根评论，并填充子评论
+     *
+     * @param index 根评论起始位置
+     * @param length 分页长度
+     * @param article_id 评论所属 文章id
+     * @param child_index 子评论起始位置
+     * @param children_length 子评论长度
      * @return
      */
-    @Select("")
-    List<Comment> getRootCommentsByArticleIDWithChildren(int comment_acticle_id);
+    @Select("select #{child_index} arg1,#{children_length} arg2," +
+            " comment_id,comment_body,comment_user_id,comment_root_id,comment_parent_id,comment_article_id,comment_status,comment_create_time " +
+            " from blog_comment " +
+            " where comment_article_id=#{article_id} and comment_root_id=0 and comment_status=1" +
+            " order by comment_create_time desc limit #{index},#{length}")
+    @Results(
+            {
+                @Result(property = "comment_id",column = "comment_id"),
+                @Result(property = "comment_children",
+                        column = "{index=arg1,length = arg2,root_comment_id=comment_id}",
+                        javaType = List.class,
+                        many = @Many(select = "xyz.thetbw.blog.data.dao.CommentDao.getCommentByRootPagingWithUserAndParent")),
+//                @Result(property = "comment_user",javaType = User.class,column = "comment_user_id",
+//                            many = @Many(select = "xyz.thetbw.blog.data.dao.UserDao.get"))
+            }
+    )
+    List<Comment> getRootCommentsByArticleIDWithChildren(int index,int length,int article_id,int child_index,int children_length);
 
 
 
