@@ -3,18 +3,23 @@ package xyz.thetbw.none
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
 import freemarker.cache.ClassTemplateLoader
+import io.ebean.DB
+import io.ebean.DatabaseFactory
+import io.ebean.EbeanServer
+import io.ebean.EbeanServerFactory
+import io.ebean.config.DatabaseConfig
+import io.ebean.config.ServerConfig
+import io.ebean.config.dbplatform.h2.H2Platform
 import io.ktor.application.*
 import io.ktor.features.*
 import io.ktor.freemarker.*
 import io.ktor.gson.*
 import mu.KotlinLogging
-import org.jetbrains.exposed.sql.Database
-import org.jetbrains.exposed.sql.SchemaUtils
-import org.jetbrains.exposed.sql.transactions.transaction
 import xyz.thetbw.none.common.ApplicationHolder
 
 import xyz.thetbw.none.common.utils.ConfigUtil
-import xyz.thetbw.none.system.data.entities.User
+import xyz.thetbw.none.system.data.domain.SysUser
+import java.util.*
 
 
 private val logger = KotlinLogging.logger{}
@@ -56,12 +61,42 @@ fun Application.plugin(){
 
         //连接数据库
         val datasource = HikariDataSource(config)
-        Database.connect(datasource)
 
-        //初始化数据库
-        transaction {
-            SchemaUtils.create(User)
+        var databaseConfig  = DatabaseConfig()
+        databaseConfig.loadFromProperties()
+        databaseConfig.isDefaultServer  = true
+        databaseConfig.dataSource = datasource
+        //自动创建数据库
+//        databaseConfig.isDdlCreateOnly = true
+        databaseConfig.isDdlRun = true
+        databaseConfig.isDdlGenerate = true
+
+        databaseConfig.isRegister = true
+        databaseConfig.databasePlatform = H2Platform()
+
+//        val p = Properties()
+//        p.setProperty("ebean.db.ddl.generate","true")
+//        p.setProperty("ebean.db.ddl.run","true")
+//
+//        databaseConfig.loadFromProperties(p)
+
+//        databaseConfig.ddl
+        try {
+            logger.info { "开始配置ebean" }
+            DatabaseFactory.create(databaseConfig)
+//            CurrentModel()
+            logger.info { "ebean配置结束" }
+        }catch (e: Exception){
+            e.printStackTrace()
         }
+
+
+//        Database.connect(datasource)
+//
+//        //初始化数据库
+//        transaction {
+//            SchemaUtils.create(User)
+//        }
 
 
     }

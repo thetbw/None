@@ -5,6 +5,7 @@ import io.ktor.response.*
 import io.ktor.routing.*
 import mu.KotlinLogging
 import org.kodein.di.instance
+import xyz.thetbw.none.common.data.ReqResult
 import xyz.thetbw.none.common.utils.toJson
 import xyz.thetbw.none.di
 import xyz.thetbw.none.system.service.UserService
@@ -18,12 +19,11 @@ fun Route.systemUserApi(){
 
     route("/user"){
         get {
-            logger.info { "开始获取用户" }
-            call.respond(userService.queryUser("").toJson())
+            call.respond(ReqResult.createPagedResult(userService.listUser()).toJson())
         }
         post {
             logger.info { "开始创建用户" }
-            userService.addUser()
+//            userService.addUser()
         }
 
         delete {

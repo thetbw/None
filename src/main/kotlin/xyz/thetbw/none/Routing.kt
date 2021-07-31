@@ -4,7 +4,7 @@ import io.ktor.application.*
 
 import io.ktor.routing.*
 import mu.KotlinLogging
-import xyz.thetbw.none.system.controller.systemRouting
+import xyz.thetbw.none.system.systemRouting
 
 private val logger = KotlinLogging.logger {  }
 /**
