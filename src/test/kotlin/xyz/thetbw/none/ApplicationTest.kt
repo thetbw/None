@@ -2,7 +2,6 @@ package xyz.thetbw.none
 
 import io.ktor.routing.*
 import io.ktor.http.*
-import io.ktor.gson.*
 import io.ktor.features.*
 import freemarker.cache.*
 import io.ktor.freemarker.*

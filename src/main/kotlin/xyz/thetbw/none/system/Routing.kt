@@ -1,20 +1,27 @@
 package xyz.thetbw.none.system
 
+import io.ktor.auth.*
 import io.ktor.routing.*
-import mu.KotlinLogging
+import xyz.thetbw.none.common.SysUserRole
+import xyz.thetbw.none.plugin.withRole
 import xyz.thetbw.none.system.controller.api.systemLoginApi
 import xyz.thetbw.none.system.controller.api.systemUserApi
 
-private val logger = KotlinLogging.logger {  }
 
 /**
  * 注册路由
  */
-fun Routing.systemRouting(){
-    logger.info { "开始注册系统路由" }
+fun Route.systemRouting(){
 
     this.systemLoginApi() //登录注册相关接口
-    route("/admin"){
-        systemUserApi() //用户管理相关接口
+
+    withRole(SysUserRole.ADMIN) {
+        route("/admin"){
+            systemUserApi() //用户管理相关接口
+        }
+
     }
+
+
+
 }

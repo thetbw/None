@@ -1,12 +1,12 @@
 package xyz.thetbw.none.common.utils
 
 import mu.KotlinLogging
-import xyz.thetbw.none.common.ApplicationHolder
+import xyz.thetbw.none.ApplicationHolder
 
 /**
  * 配置信息工具类
  */
-object ConfigUtil {
+object Config {
 
     private val logger = KotlinLogging.logger{}
 
@@ -15,15 +15,11 @@ object ConfigUtil {
      * @param configName 配置名称
      * @param defaultValue 默认值
      */
-    fun getAsString(configName: String, defaultValue: String? = null,notNull: Boolean = false): String? {
+    fun getAsString(configName: String, defaultValue: String? = null, notNull: Boolean = false): String? {
         //TODO        contract
         logger.debug { "" }
         val config = ApplicationHolder.getApplication().environment.config
-        val value =  config.propertyOrNull(configName)?.getString()?: defaultValue
-        logger.debug {
-            "获取配置 $configName -> ${value?:"null"}"
-        }
-        return value
+        return config.propertyOrNull(configName)?.getString() ?: defaultValue
     }
 
     /**

@@ -1,7 +1,5 @@
 package xyz.thetbw.none.system.data.domain
 
-import io.ebean.DB
-import xyz.thetbw.none.common.data.BaseDao
 import xyz.thetbw.none.common.data.SoftDeleteEntity
 import javax.persistence.Column
 import javax.persistence.Entity
@@ -15,7 +13,10 @@ class SysUser : SoftDeleteEntity() {
      * 登录名称
      */
     @Column(length = 32)
-    lateinit var name: String
+    var name: String = ""
+        get() {
+            return "";
+        }
 
     /**
      * 昵称
@@ -27,6 +28,7 @@ class SysUser : SoftDeleteEntity() {
      * 密码
      */
     @Column(length = 64)
+    @Transient
     lateinit var password: String
 
     /**
@@ -38,6 +40,11 @@ class SysUser : SoftDeleteEntity() {
     /**
      * 性别
      */
-    lateinit var gender: Integer
+    var gender: Int = 0
+
+    /**
+     * 角色信息s
+     */
+    lateinit var role: String
 
 }

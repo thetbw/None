@@ -1,4 +1,4 @@
-package xyz.thetbw.none.common
+package xyz.thetbw.none
 
 import io.ktor.application.*
 
@@ -23,6 +23,6 @@ object ApplicationHolder {
      * 获取Application
      */
     fun getApplication() :Application{
-        return application;
+        return application
     }
 }
