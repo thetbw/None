@@ -1,25 +1,29 @@
 package xyz.thetbw.blog.web.controller;
 
+import cn.hutool.core.util.StrUtil;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import xyz.thetbw.blog.data.AppContext;
-import xyz.thetbw.blog.data.constant.ConstValue;
 import xyz.thetbw.blog.data.constant.FieldKey;
 import xyz.thetbw.blog.data.entity.User;
-import xyz.thetbw.blog.data.model.DefaultMsgModel;
 import xyz.thetbw.blog.exception.*;
 import xyz.thetbw.blog.service.UserService;
-import xyz.thetbw.blog.util.StringUtils;
-
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Controller
 public class LoginController extends BaseController {
+
+
+    @Value("${auth.github.client-id}")
+    private String githubAppId;
+
+    @Value("${auth.siteurl}")
+    private String siteUrl;
 
     @Autowired
     UserService userService;
@@ -36,6 +40,25 @@ public class LoginController extends BaseController {
             }
         }
         return "login";
+    }
+
+    /**
+     * github 登录
+     */
+    @GetMapping("/githubLogin")
+    public String githubLogin(@RequestParam(required = false,name = "referer") String referer,HttpServletResponse response) throws IOException {
+        response.sendRedirect(
+                StrUtil.format("https://github.com/login/oauth/authorize?client_id={}&redirect_uri={}/githubRedirect?referer={}",githubAppId,siteUrl,referer));
+        return "login";
+    }
+
+    @GetMapping("/githubRedirect")
+    public String githubCallback(@RequestParam(required = false,name = "referer") String referer,@RequestParam("code") String code,HttpServletResponse response) throws RequestException, IOException {
+        User user = userService.githubLogin(code);
+        request.getSession().setAttribute(FieldKey.USER_ACCESS,user);
+        if (referer!=null)
+            response.sendRedirect(referer);
+        return null;
     }
 
     @GetMapping("/register")

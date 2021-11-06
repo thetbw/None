@@ -103,7 +103,8 @@ CREATE TABLE IF NOT EXISTS blog_user(
     user_pass int null,
     user_role int not null default 2,
     user_email varchar(255) null,
-    user_avatar_url varchar(255)  null
-    
+    user_avatar_url varchar(255)  null,
+    github_id bigint null
+
 )engine=InnoDB;
 

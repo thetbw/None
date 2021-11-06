@@ -27,14 +27,14 @@ public interface UserDao {
      List<User> getAllPagingOrderAndFilter(int index, int length, int filter, String order);
 
 
-    @Insert("insert into blog_user(user_name,user_nickname,user_pass,user_role,user_avatar_url,user_email) values(" +
-            "#{user_name},#{user_nickname},#{user_pass},#{user_role},#{user_avatar_url},#{user_email})")
+    @Insert("insert into blog_user(user_name,user_nickname,user_pass,user_role,user_avatar_url,user_email,github_id) values(" +
+            "#{user_name},#{user_nickname},#{user_pass},#{user_role},#{user_avatar_url},#{user_email},#{github_id})")
     @Options(useGeneratedKeys = true,keyProperty = "user_id")
      void add(User o);
 
 
     @Update("update blog_user set user_name=#{user_name},user_nickname=#{user_nickname},user_pass=#{user_pass}," +
-            "user_role=#{user_role},user_avatar_url=#{user_avatar_url},user_email=#{user_email} where user_id=#{user_id}")
+            "user_role=#{user_role},user_avatar_url=#{user_avatar_url},user_email=#{user_email},github_id=#{github_id} where user_id=#{user_id}")
      void update(User o) ;
 
 
@@ -44,6 +44,9 @@ public interface UserDao {
 
     @Select("select * from blog_user where user_id =#{id}")
      User get(int id);
+
+    @Select("select * from blog_user where github_id =#{githubUserId}")
+    User getByGithubId(long githubId);
 
     @Select("select * from blog_user where user_role=#{user_role}")
     List<User> selectAllUserByRole(int user_role);

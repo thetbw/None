@@ -1,16 +1,20 @@
 package xyz.thetbw.blog.service;
 
+import cn.hutool.http.HttpRequest;
+import cn.hutool.json.JSONUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import xyz.thetbw.blog.data.AppContext;
 import xyz.thetbw.blog.data.constant.ConstValue;
 import xyz.thetbw.blog.data.constant.FieldKey;
 import xyz.thetbw.blog.data.constant.SettingKey;
 import xyz.thetbw.blog.data.dao.UserDao;
 import xyz.thetbw.blog.data.dao.UserSettingDao;
+import xyz.thetbw.blog.data.dto.GithubUser;
 import xyz.thetbw.blog.data.entity.User;
 import xyz.thetbw.blog.data.entity.UserSetting;
 import xyz.thetbw.blog.exception.*;
@@ -19,17 +23,12 @@ import xyz.thetbw.blog.util.EncodeUtils;
 import xyz.thetbw.blog.util.RandomUtils;
 import xyz.thetbw.blog.util.StringUtils;
 
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.UnsupportedEncodingException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * 用户相关
@@ -40,6 +39,21 @@ public class UserService {
 
     @Autowired
     HttpServletRequest request;
+
+    @Value("${auth.github.client-id}")
+    private String githubAppId;
+
+    @Value("${auth.siteurl}")
+    private String siteUrl;
+
+    @Value("${auth.github.client-secret}")
+    private String githubAppSecret;
+
+    @Value("${auth.proxy.ip}")
+    private String authProxyIp;
+
+    @Value("${auth.proxy.port}")
+    private Integer authProxyPort;
 
 
     @Value("${aes.password}")
@@ -73,6 +87,85 @@ public class UserService {
             throw new UserAccessErrorException();
         request.getSession().setAttribute(FieldKey.USER_ACCESS,user);
     }
+
+    public User githubLogin(String code) throws RequestException {
+        String[] accessToken = getGithubAccessToken(code);
+        if (accessToken == null){
+            throw new UserException("获取github token异常");
+        }
+        GithubUser githubUser = getGithubUserInfo(accessToken[0],accessToken[1]);
+        if (githubUser==null){
+            throw new UserException("获取github用户是失败");
+        }
+        User user = userDao.getByGithubId(githubUser.getId());
+        if (user != null){
+
+            return user;
+        }
+        LOG.info("开始通过github注册,github用户名：{}",githubUser.getLogin());
+        //开始注册用户
+        if (!AppContext.getInstance().setting.getCanRegister()){
+            throw new RequestException("已关闭注册");
+        }
+        return createUser(githubUser.getLogin(),githubUser.getName(),githubUser.getLogin(),
+                githubUser.getEmail(),githubUser.getAvatar_url(),User.USER_ROLE_MENMBER,githubUser.getId());
+
+    }
+
+
+    /**
+     * 根据请求码获取 github token
+     */
+    private String[] getGithubAccessToken(String code) {
+        Map<String,String> reqParams = new HashMap<>();
+        reqParams.put("client_id",githubAppId);
+        reqParams.put("client_secret",githubAppSecret);
+        reqParams.put("code",code);
+        HttpRequest request =  HttpRequest.post("https://github.com/login/oauth/access_token").body(JSONUtil.toJsonStr(reqParams));
+        setProxy(request);
+        String body = request.execute().body();
+        LOG.debug("github获取token,收到的响应信息为:{}",body);
+        //开始解析
+        String[] respParams = body.split("&");
+        String accessToken = null;
+        String tokenType= null;
+        for (String respParam : respParams) {
+            String[] kv = respParam.split("=");
+            if ("access_token".equals(kv[0])){
+                accessToken = kv[1];
+            }
+            if ("token_type".equals(kv[0])) {
+                tokenType = kv[1];
+            }
+        }
+        if (accessToken != null && tokenType != null){
+            return  new String[]{accessToken,tokenType};
+        }else {
+            return null;
+        }
+
+    }
+
+    private void setProxy(HttpRequest request){
+        if (authProxyIp!=null && authProxyPort!=null){{
+            request.setHttpProxy(authProxyIp,authProxyPort);}
+        }
+    }
+
+    /**
+     * 根据github token获取github用户信息
+     */
+    private GithubUser getGithubUserInfo(String accessToken, String tokenType){
+        System.out.println(accessToken+":"+tokenType);
+        HttpRequest request = HttpRequest.get("https://api.github.com/user")
+                .bearerAuth(accessToken)
+                .header("User-Agent","None");
+        setProxy(request);
+        String userJson = request.execute().body();
+        LOG.debug("github获取用户信息,收到的响应信息为:{}",userJson);
+        return JSONUtil.toBean(userJson,GithubUser.class);
+    }
+
 
     /**
      * 获取当前登陆用户信息
@@ -151,6 +244,9 @@ public class UserService {
         return user;
     }
 
+    private User createUser(String user_name,String user_nickname,String pass,String email,String avatar,int role) throws StringNotExistException, StringIsNoneException, UserAlreadyExitsException{
+        return createUser(user_name,user_nickname,pass,email,avatar,role,null);
+    }
 
     /**
      * 创建用户
@@ -165,7 +261,7 @@ public class UserService {
      * @throws StringNotExistException
      * @throws StringIsNoneException
      */
-    private User createUser(String user_name,String user_nickname,String pass,String email,String avatar,int role) throws StringNotExistException, StringIsNoneException, UserAlreadyExitsException {
+    private User createUser(String user_name,String user_nickname,String pass,String email,String avatar,int role,Long githubId) throws StringNotExistException, StringIsNoneException, UserAlreadyExitsException {
         StringUtils utils = StringUtils.getInstance();
         String name=utils.validString(user_name);
         String nickname = utils.htmlTrans(utils.validString(user_nickname));
@@ -185,6 +281,7 @@ public class UserService {
         user.setUser_avatar_url(avatar);
         user.setUser_email(email);
         user.setUser_role(role);
+        user.setGithub_id(githubId);
         userDao.add(user);
 
         if (user.getUser_id()==0){

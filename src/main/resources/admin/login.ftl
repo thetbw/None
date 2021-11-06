@@ -9,10 +9,15 @@
                 <input type="password" class="form-control  login" placeholder="密码" name="user_pass" maxlength="32"
                        required>
                 <button type="button" class="btn btn-primary" id="login-button">登陆</button>
+                <button type="button" class="btn btn-success" id="github-button">Github登录</button>
                 <#if _property("isCanRegister")>
                     <button type="button" class="btn btn-info" onclick="register()">注册</button>
                 </#if>
                 <p><input class="radio" type="checkbox" name="auto_login" id="auto-login">下次自动登陆</p>
+
+                <div>
+                    <button type="button" class="btn btn-success" id="github-button">Github登录</button>
+                </div>
             </form>
         </div>
         <a href="/">返回首页</a>
@@ -61,6 +66,10 @@
                 }
             })
         });
+
+        $("#github-button").click(function (){
+            window.open('/githubLogin?referer='+GetQueryValue("referer"),'_self');
+        })
     });
 
 </script>

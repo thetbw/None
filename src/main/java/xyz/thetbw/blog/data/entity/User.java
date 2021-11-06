@@ -1,7 +1,5 @@
 package xyz.thetbw.blog.data.entity;
 
-import javax.lang.model.element.NestingKind;
-
 public class User {
     public static final String TABLE_NAME="blog_user";
 
@@ -25,10 +23,19 @@ public class User {
     private int user_role;
     private String user_avatar_url;
     private String user_email;
+    private Long github_id;
 
     public User clearPass(){
         this.user_pass=0;
         return this;
+    }
+
+    public Long getGithub_id() {
+        return github_id;
+    }
+
+    public void setGithub_id(Long github_id) {
+        this.github_id = github_id;
     }
 
     @Override
